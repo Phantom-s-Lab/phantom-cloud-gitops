@@ -1,12 +1,8 @@
-# root Application (App-of-Apps)
-# 결정 근거: Phantom-cloud ADR-0005
-# 최초 1회만 수동 적용: kubectl apply -f bootstrap/root.yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: root
   namespace: argocd
-  # finalizer 없음: root를 지워도 하위 앱과 워크로드가 연쇄 삭제되지 않도록 (ADR-0005)
 spec:
   project: default
   source:
