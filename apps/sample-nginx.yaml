@@ -1,0 +1,24 @@
+# GitOps 동작 검증용 테스트 앱 (phantom-cloud-gitops#5)
+# 검증이 끝나면 실제 플랫폼 구성요소로 대체하고 삭제한다.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sample-nginx
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io  # 앱 삭제 시 배포한 리소스도 함께 정리
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Phantom-s-Lab/phantom-cloud-gitops.git
+    targetRevision: main
+    path: platform/sample-nginx
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sample
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

@@ -57,6 +57,19 @@ kubectl port-forward svc/argocd-server -n argocd 8080:443
 kubectl -n argocd delete secret argocd-initial-admin-secret
 ```
 
+## 4. root 앱 적용 (App-of-Apps)
+
+결정 근거: [ADR-0005](https://github.com/Phantom-s-Lab/Phantom-cloud/blob/main/adr/0005-app-of-apps-applicationset.md)
+
+root 앱은 `apps/` 디렉터리를 동기화합니다. 이후 앱 추가·변경·삭제는 `apps/`와 `platform/`을 PR로 수정합니다.
+
+```bash
+# 최초 1회만 수동 적용
+kubectl apply -f bootstrap/root.yaml
+
+# root와 하위 앱 상태 확인 (Synced / Healthy)
+kubectl get applications -n argocd
+```
+
 ## 다음 단계
-- root 앱(App-of-Apps) 적용
 - ArgoCD 자기 관리(self-managed) 전환: 이후 ArgoCD 설정 변경은 이 values.yaml을 PR로 수정
