@@ -1,0 +1,47 @@
+# ArgoCD Helm values (chart argo/argo-cd 10.11.7, app v3.5.7)
+# 결정 근거: Phantom-cloud ADR-0002 (x86 노드 배치, non-HA)
+
+global:
+  # 모든 컴포넌트를 x86 노드(node03)에 배치
+  nodeSelector:
+    kubernetes.io/arch: amd64
+
+# 외부 SSO 미사용
+dex:
+  enabled: false
+
+# 알림 미사용
+notifications:
+  enabled: false
+
+# non-HA: 단일 레플리카 (redis-ha는 차트 기본값 false 유지)
+# CPU limit은 스로틀링을 피하려고 두지 않고, 메모리만 limit을 둔다.
+controller:
+  replicas: 1
+  resources:
+    requests: { cpu: 250m, memory: 512Mi }
+    limits: { memory: 1Gi }
+
+repoServer:
+  replicas: 1
+  resources:
+    # 매니페스트 렌더링(helm template)에 메모리를 많이 쓰므로 limit을 넉넉하게
+    requests: { cpu: 100m, memory: 256Mi }
+    limits: { memory: 1Gi }
+
+server:
+  replicas: 1
+  resources:
+    requests: { cpu: 50m, memory: 128Mi }
+    limits: { memory: 256Mi }
+
+applicationSet:
+  replicas: 1
+  resources:
+    requests: { cpu: 50m, memory: 64Mi }
+    limits: { memory: 256Mi }
+
+redis:
+  resources:
+    requests: { cpu: 50m, memory: 64Mi }
+    limits: { memory: 128Mi }
