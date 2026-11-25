@@ -19,7 +19,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: sshd
-          image: ghcr.io/phantom-s-lab/tenant-base:sha-e928162
+          image: ghcr.io/phantom-s-lab/tenant-base:sha-c3a4983
           ports:
             - name: ssh
               containerPort: 2222
