@@ -31,6 +31,32 @@ jobs:
                 -schema-location default \
                 -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
 
+  tenant-render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+
+      - name: Install kubeconform
+        run: |
+          curl -fsSL "https://github.com/yannh/kubeconform/releases/download/${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz" \
+            | sudo tar xz -C /usr/local/bin kubeconform
+
+      - name: Render and validate each tenant
+        run: |
+          shopt -s nullglob
+          files=(tenants/*/values.yaml)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "::notice::테넌트가 없어 건너뜀"
+            exit 0
+          fi
+          for f in "${files[@]}"; do
+            name="$(basename "$(dirname "$f")")"
+            echo "== tenant-${name}"
+            helm template "tenant-${name}" charts/tenant -f "$f" \
+              | kubeconform -strict -summary -kubernetes-version "${KUBERNETES_VERSION}"
+          done
+
   helm-lint:
     runs-on: ubuntu-latest
     steps:
@@ -45,5 +71,5 @@ jobs:
             exit 0
           fi
           for chart in $charts; do
-            helm lint "$chart"
+            helm lint "$chart" --set name=lint
           done

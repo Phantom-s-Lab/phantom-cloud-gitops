@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: authorized-keys
+  namespace: {{ include "tenant.namespace" . }}
+  labels:
+    {{- include "tenant.labels" . | nindent 4 }}
+data:
+  tenant: |
+    {{- range .Values.sshPublicKeys }}
+    {{ . }}
+    {{- end }}

@@ -1,0 +1,61 @@
+{{- $tier := include "tenant.tier" . | fromYaml }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ssh
+  namespace: {{ include "tenant.namespace" . }}
+  labels:
+    {{- include "tenant.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "tenant.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "tenant.selectorLabels" . | nindent 8 }}
+      annotations:
+        checksum/authorized-keys: {{ toJson .Values.sshPublicKeys | sha256sum }}
+    spec:
+      hostname: {{ include "tenant.name" . }}
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: sshd
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          ports:
+            - name: ssh
+              containerPort: 2222
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+              add: ["CHOWN", "SETUID", "SETGID", "SYS_CHROOT", "AUDIT_WRITE", "KILL"]
+          resources:
+            {{- toYaml $tier.resources | nindent 12 }}
+          readinessProbe:
+            tcpSocket:
+              port: ssh
+          volumeMounts:
+            - name: data
+              mountPath: /home/tenant
+              subPath: home
+            - name: data
+              mountPath: /etc/ssh/hostkeys
+              subPath: hostkeys
+            - name: authorized-keys
+              mountPath: /etc/ssh/authorized_keys
+              readOnly: true
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: data
+        - name: authorized-keys
+          configMap:
+            name: authorized-keys

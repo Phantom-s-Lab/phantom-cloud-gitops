@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ssh
+  namespace: {{ include "tenant.namespace" . }}
+  labels:
+    {{- include "tenant.labels" . | nindent 4 }}
+spec:
+  type: {{ ternary "NodePort" "ClusterIP" (not (empty .Values.ssh.nodePort)) }}
+  selector:
+    {{- include "tenant.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: ssh
+      port: 2222
+      targetPort: ssh
+      {{- with .Values.ssh.nodePort }}
+      nodePort: {{ . }}
+      {{- end }}
