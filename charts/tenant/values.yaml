@@ -3,7 +3,7 @@ tier: small
 
 image:
   repository: ghcr.io/phantom-s-lab/tenant-base
-  tag: sha-9f9c428
+  tag: sha-c41b277
 
 sshPublicKeys: []
 
