@@ -2,12 +2,6 @@ name: validate
 
 on:
   pull_request:
-    paths:
-      - "apps/**"
-      - "bootstrap/**"
-      - "platform/**"
-      - "tenants/**"
-      - ".github/workflows/validate.yml"
 
 permissions:
   contents: read
