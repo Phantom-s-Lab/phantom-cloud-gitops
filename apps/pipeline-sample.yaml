@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: pipeline-sample
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Phantom-s-Lab/phantom-cloud-gitops.git
+    targetRevision: main
+    path: platform/pipeline-sample
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: pipeline-sample
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
