@@ -50,7 +50,7 @@ spec:
               mountPath: /etc/ssh/hostkeys
               subPath: hostkeys
             - name: authorized-keys
-              mountPath: /etc/ssh/authorized_keys
+              mountPath: /etc/ssh/authorized_keys.src
               readOnly: true
       volumes:
         - name: data
