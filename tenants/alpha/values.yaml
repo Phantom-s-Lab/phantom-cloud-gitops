@@ -1,0 +1,4 @@
+name: alpha
+tier: small
+sshPublicKeys:
+  - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDNnTjEXMeAkcSPwTN/zTo86n5bO4QERgGPeI5GWYp5t
