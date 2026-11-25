@@ -1,0 +1,55 @@
+name: validate
+
+on:
+  pull_request:
+    paths:
+      - "apps/**"
+      - "bootstrap/**"
+      - "platform/**"
+      - "tenants/**"
+      - ".github/workflows/validate.yml"
+
+permissions:
+  contents: read
+
+env:
+  KUBECONFORM_VERSION: v0.7.0
+  KUBERNETES_VERSION: 1.33.0
+
+jobs:
+  kubeconform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kubeconform
+        run: |
+          curl -fsSL "https://github.com/yannh/kubeconform/releases/download/${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz" \
+            | sudo tar xz -C /usr/local/bin kubeconform
+          kubeconform -v
+
+      - name: Validate manifests
+        run: |
+          find apps bootstrap platform tenants -name '*.yaml' \
+              -not -path 'bootstrap/argocd/*' -not -name 'values*.yaml' -print0 2>/dev/null \
+            | xargs -0 kubeconform -strict -summary -output pretty \
+                -kubernetes-version "${KUBERNETES_VERSION}" \
+                -schema-location default \
+                -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
+
+  helm-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+
+      - name: Lint charts
+        run: |
+          charts=$(find . -name Chart.yaml -not -path './.git/*' -exec dirname {} \;)
+          if [ -z "$charts" ]; then
+            echo "::notice::차트가 없어 건너뜀"
+            exit 0
+          fi
+          for chart in $charts; do
+            helm lint "$chart"
+          done
